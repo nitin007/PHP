@@ -1,11 +1,20 @@
 <?php
-//include_once ("managefunc.php");
 include("common.php");
 include_once("dbconn.php");
 require_once "DB.php";
 
 
 session_start();
+
+function dberror($result)
+{
+	if (DB::isError($result))
+	{
+		$errorMessage = $result->getMessage();
+		die ($errorMessage);
+	}
+}
+
 
 if($_SESSION['sign_in'])
 {
@@ -19,11 +28,7 @@ if($_SESSION['sign_in'])
 			{
 				$cat_id?$query="update categories set name = '$val', last_modified = CURDATE() where id=$cat_id":$query="insert into categories(name,status,added_on,last_modified) VALUES ('$val','active',CURDATE(),CURDATE())";
 				$result = $db->query($query);
-				if (DB::isError($result))
-				{
-					$errorMessage = $result->getMessage();
-					die ($errorMessage);
-				}
+				dberror($result);
 			}
 		
 			else
@@ -35,28 +40,24 @@ if($_SESSION['sign_in'])
 	}
 
 	//delete category
-	if($_POST['sure'])
+	function delete_category()
 	{
 		$cat_id = $_POST['remove_cat'];
 		$query = "update categories set status='delete' where id=$cat_id";
 		$result = $db->query($query);
-		if (DB::isError($result1))
-		{
-			$errorMessage = $result->getMessage();
-			die ($errorMessage);
-		}	
+		dberror($result);
 	}
-
+	
+	if($_POST['sure'])
+	{
+		delete_category();
+	}
+	
 
 	//show category
 	$query = "select id, name from categories where status='active'";
 	$result = $db->query($query);
-	if (DB::isError($result))
-	{
-		//echo 'jfvh';
-		$errorMessage = $result->getMessage();
-		die ($errorMessage);
-	}
+	dberror($result);
 
 
 	while ($row = $result->fetchRow())
@@ -103,12 +104,7 @@ if($_SESSION['sign_in'])
 				}
 			}
 			$result = $db->query($query2);
-			if (DB::isError($result))
-			{
-				echo $category;
-				$errorMessage = $result->getMessage();
-				die ($errorMessage);
-			}
+			dberror($result);
 		
 		} 
 	}
@@ -121,22 +117,14 @@ if($_SESSION['sign_in'])
 		$article_id = $_POST['article_id'];
 		$query = "update articles set status='delete' where id='$article_id'";
 		$result = $db->query($query);
-		if (DB::isError($result))
-		{
-			$errorMessage = $result->getMessage();
-			die ($errorMessage);
-		}
+		dberror($result);
 	}
 
 
 	//show articles
 	$query = "select title,description,name,posted_on,articles.last_modified,articles.id from articles join categories on category_id=categories.id where articles.status = 'active' and categories.status='active'";
 	$result = $db->query($query);
-	if (DB::isError($result))
-	{
-		$errorMessage = $result->getMessage();
-		die ($errorMessage);
-	}
+	dberror($result);
 	while ($row = $result->fetchRow())
 	{
 		$row_str .= '<tr><td class=title>'.$row[0].'</td>';
@@ -154,7 +142,7 @@ if($_SESSION['sign_in'])
 	$thispage = $_SERVER['PHP_SELF'];
 	$manage_cat1 .= <<< manage_cat
 	<div class=to_other><a href=visit.php>Visit</a></div>
-	<div class=to_other><a href=signin.php>Sign out</a></div><br>
+	<div class=to_other><a href=index.php>Sign out</a></div><br>
 	<div class="category_wrapper">
 	<form method="POST" action="$thispage" id="category_form">
 	<div class="manage_categories"> Manage Categories</div>
@@ -216,7 +204,7 @@ manage_art;
 }
 else
 {
-	header("location:http://localhost/blog/php/signin.php");
+	header("location:http://localhost/blog/php/index.php");
 }
 ?>
 

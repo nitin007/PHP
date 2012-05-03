@@ -9,6 +9,16 @@ require_once 'DB.php';
 
 <?php
 
+function dberror($result)
+{
+	if (DB::isError($result))
+	{
+		$errorMessage = $result->getMessage();
+		die ($errorMessage);
+	}
+}
+
+
 $username = $_POST['usrname'];
 
 $thispage = $_SERVER['PHP_SELF'];
@@ -60,7 +70,7 @@ $signup .= <<<EOF
 </tr>	
 <tr>
 <td><br><button type="submit" name="submit" value="Submit">Sign Up</button></td>
-<td><br><a href="signin.php" style="margin-left:130">Sign In</a></td>
+<td><br><a href="index.php" style="margin-left:130">Sign In</a></td>
 <td><br><a href="visit.php" style="float:right">Visit</a></td>
 </tr>
 EOF;
@@ -71,22 +81,14 @@ if($_POST['usrname'] && $flag)
 	$password = trim($_POST['pass']);
 	$query = "select username from users where username like \"%$username%\"";
 	$result = $db->query($query);
-	if (DB::isError($result))
-	{
-		$errorMessage = $result->getMessage();
-		die ($errorMessage);
-	}
+	dberror($result);
+	
 	$rows = $result->numRows();
 	if(!$rows)
 	{
 		$query = "insert into users(username,password) values('$username','$password')";
 		$result = $db->query($query);
-		if (DB::isError($result))
-		{
-			$errorMessage = $result->getMessage();
-			die ($errorMessage);
-		}
-		
+		dberror($result);
 		$signup = 'thanx for registering with us';
 	}
 	else
